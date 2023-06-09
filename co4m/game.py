@@ -30,10 +30,16 @@ class Rendering(Enum):
 
 
 def toggle(player_id: PlayerId):
+    """
+    Change player
+    """
     return PLAYER_2 if player_id == PLAYER_1 else PLAYER_1
 
 
 def run_in_terminal(board: Board):
+    """
+    Runs the game in the terminal
+    """
     player = PLAYER_1
 
     while True:
@@ -69,6 +75,9 @@ def init_graphics(board: Board):
 
 
 def draw_board(board: Board, screen):
+    """
+    Update graphic with current board state
+    """
     for i, row in enumerate(board.state[::-1]):
         for j, column in enumerate(row):
             if column != 0:
@@ -87,6 +96,9 @@ def draw_board(board: Board, screen):
 
 
 def run_with_graphics(board: Board):
+    """
+    Runs the game with graphical interface
+    """
     screen, font = init_graphics(board)
     player = PLAYER_1
     won = False

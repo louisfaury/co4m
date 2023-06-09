@@ -2,7 +2,7 @@
 Connect Four board implementation
 """
 
-from typing import Literal, Optional
+from typing import Literal
 import numpy as np
 
 from co4m.player import PlayerId
@@ -93,7 +93,7 @@ class Board:
         """
         return self.is_won(PlayerId.PLAYER1) or self.is_won(PlayerId.PLAYER2) or self.is_draw()
 
-    def render(self, render: Optional[str] = None):
+    def render(self):
         """
         Rendering
         """

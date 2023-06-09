@@ -75,7 +75,7 @@ class Board:
         for array in check_list:
             max_consec = max(max_consec, self.max_consecutive(array))
 
-        return max_consec == 4
+        return max_consec >= 4
 
     def is_draw(self):
         """
@@ -109,7 +109,7 @@ class Board:
         descr = "\n\033[1;30;47m"
         descr += "\n \t \t \t \t \t \t  \n".join(
             [
-                "\t".join([self.int_to_char[elem]+' ' for i, elem in enumerate(row)])
+                "\t".join([self.int_to_char[elem] + " " for i, elem in enumerate(row)])
                 for row in self.state[::-1]
             ]
         )

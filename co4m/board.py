@@ -97,9 +97,10 @@ class Board:
         """
         Rendering
         """
-        if render:
-            if render == "terminal":
-                print(self)
+        print(self)
+
+    def reset(self):
+        self.state *= 0
 
     def __repr__(self):
         int_to_char = {1: "x", -1: "o", 0: "."}

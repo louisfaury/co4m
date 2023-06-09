@@ -1,22 +1,10 @@
 """
 Connect Four board implementation
 """
-
 from typing import Literal
 import numpy as np
 
 from co4m.player import PlayerId
-
-
-def max_consecutive(array: list):
-    """
-    Given a boolean array, find the max. of consecutive `True` value
-    """
-    value, max_value = 0, 0
-    for elem in array:
-        value = value + 1 if elem else 0
-        max_value = max(max_value, value)
-    return max_value
 
 
 class Board:
@@ -28,6 +16,7 @@ class Board:
         self.width = 7
         self.height = 6
         self.state = np.zeros(shape=(self.height, self.width))
+        self.int_to_char = {1: "\U0001F7E1", -1: "\U0001F534", 0: "\u2B24"}
 
     def get_height(self, column: int) -> int:
         """
@@ -56,6 +45,17 @@ class Board:
 
         return self.is_won(player_id)
 
+    @staticmethod
+    def max_consecutive(array: list):
+        """
+        Given a boolean array, find the max. of consecutive `True` value
+        """
+        value, max_value = 0, 0
+        for elem in array:
+            value = value + 1 if elem else 0
+            max_value = max(max_value, value)
+        return max_value
+
     def is_won(self, player_id: PlayerId) -> bool:
         """
         Checks if the game is won for a particular player
@@ -73,7 +73,7 @@ class Board:
 
         max_consec = 0
         for array in check_list:
-            max_consec = max(max_consec, max_consecutive(array))
+            max_consec = max(max_consec, self.max_consecutive(array))
 
         return max_consec == 4
 
@@ -103,14 +103,17 @@ class Board:
         self.state *= 0
 
     def __repr__(self):
-        int_to_char = {1: "x", -1: "o", 0: "."}
-        descr = "\t".join(map(str, np.arange(1, self.width + 1)))
-        descr += "\n"
-        descr += "".join(["-" for _ in range(50)])
-        descr += "\n"
-        descr += "\n".join(
-            ["\t".join([int_to_char[elem] for elem in row]) for row in self.state[::-1]]
+        return str(self.state[::-1])
+
+    def __str__(self):
+        descr = "\n\033[1;30;47m"
+        descr += "\n \t \t \t \t \t \t  \n".join(
+            [
+                "\t".join([self.int_to_char[elem]+' ' for i, elem in enumerate(row)])
+                for row in self.state[::-1]
+            ]
         )
         descr += "\n"
-        descr += "".join(["-" for _ in range(50)])
+        descr += "\n"
+        descr += "\n\033[0;0m"
         return descr

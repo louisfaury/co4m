@@ -1,9 +1,9 @@
 """
 Connect Four game implementation
-
-TODO: play-offs against random just to be sure
-TODO: auto most of the code
+TODO: MCTS
+TODO: play-offs
 """
+
 from typing import Optional
 import time
 import sys
@@ -67,7 +67,7 @@ def cli_run():
         while True:
             player_2_type = str(input(f"Who is player 2? ({'/'.join(valid_inputs)}) "))
             if player_2_type in valid_inputs:
-                player_2 = from_player_type(PlayerType[player_2_type.upper()])(PlayerId.PLAYER1)
+                player_2 = from_player_type(PlayerType[player_2_type.upper()])(PlayerId.PLAYER2)
                 break
             print("Invalid input, try again: ")
 

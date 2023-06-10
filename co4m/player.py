@@ -124,13 +124,14 @@ class MinimaxPlayer(Player):
 
         return float(
             np.sum(EVAL * (board.state == self.player_id.value).astype(int))
-            - np.sum(EVAL * (board.state == ~self.player_id.value).astype(int))
+            - np.sum(EVAL * (board.state == (~self.player_id).value).astype(int))
         )
 
     def act(self, board: "Board", depth: int = None) -> int:
         depth = depth if depth else self.depth
         moves, children = board.expand(self.player_id)
-        return moves[int(np.argmax([self.minimax(child, depth - 1) for child in children]))]
+        values = [self.minimax(child, depth - 1) for child in children]
+        return moves[int(np.argmax(values))]
 
     def minimax(
         self,

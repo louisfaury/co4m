@@ -3,7 +3,7 @@ Connect Four Player implementation
 """
 import random
 from abc import abstractmethod
-from enum import auto, Enum
+from enum import Enum
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -24,13 +24,13 @@ class PlayerId(Enum):
 
 
 class PlayerType(Enum):
-    HUMAN = auto(), "human"
-    RANDOM = auto(), "random"
-    AI_MINIMAX = auto(), "ai_minmax"
-    AI_MCTS = auto(), "ai_mcts"
+    HUMAN = "human"
+    RANDOM = "random"
+    AI_MINMAX = "ai_minmax"
+    AI_MCTS = "ai_mcts"
 
     def __str__(self):
-        return self.value[1]
+        return self.value
 
 
 WIN_VALUE = 150
@@ -102,8 +102,8 @@ class MinimaxPlayer(Player):
     Minimax player, with heuristic evaluation and alpha-beta pruning
     """
 
-    def __init__(self, player_id: PlayerId, depth: int):
-        super().__init__(player_id, PlayerType.AI_MINIMAX)
+    def __init__(self, player_id: PlayerId, depth: int = 5):
+        super().__init__(player_id, PlayerType.AI_MINMAX)
         self.depth = depth
 
     def evaluate(self, board: "Board") -> float:
@@ -138,7 +138,7 @@ class MinimaxPlayer(Player):
         depth: int,
         max_node: bool = False,
         alpha: float = LOOSE_VALUE,
-        beta: float = WIN_VALUE
+        beta: float = WIN_VALUE,
     ) -> float:
         """
         Minimimax implentation with alpha-beta pruning
@@ -151,20 +151,25 @@ class MinimaxPlayer(Player):
             if max_node:
                 value = alpha
                 for child in children:
-                    value = max(
-                        value,
-                        self.minimax(child, depth - 1, ~max_node, value, beta)
-                    )
+                    value = max(value, self.minimax(child, depth - 1, ~max_node, value, beta))
                     if value >= beta:
                         return beta
                 return value
             else:
                 value = beta
                 for child in children:
-                    value = min(
-                        value,
-                        self.minimax(child, depth - 1, ~max_node, alpha, value)
-                    )
+                    value = min(value, self.minimax(child, depth - 1, ~max_node, alpha, value))
                     if value <= alpha:
                         return alpha
                 return value
+
+
+def from_player_type(player_type: PlayerType):
+    if player_type == PlayerType.HUMAN:
+        return HumanPlayer
+    if player_type == PlayerType.AI_MINMAX:
+        return MinimaxPlayer
+    if player_type == PlayerType.RANDOM:
+        return RandomPlayer
+    else:
+        raise ValueError("Unknown player type")

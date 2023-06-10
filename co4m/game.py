@@ -3,23 +3,20 @@ Connect Four game implementation
 
 TODO: play-offs against random just to be sure
 TODO: auto most of the code
-TODO: clean player_id attribuation
 """
-
 from typing import Optional
 import time
+import sys
 
 from co4m.board import Board
-from co4m.player import MinimaxPlayer, PlayerId, HumanPlayer
+from co4m.player import Player, PlayerId, PlayerType, from_player_type
 
 
-def run(board: Optional[Board] = None, rendering: bool = True):
+def run(player_1: Player, player_2: Player, board: Optional[Board] = None, rendering: bool = True):
     """
     Runs the game in the terminal
     """
     board = board if board else Board()
-    player_1 = MinimaxPlayer(PlayerId.PLAYER1, depth=5)
-    player_2 = HumanPlayer(PlayerId.PLAYER2)
 
     def render():
         if rendering:
@@ -50,5 +47,38 @@ def run(board: Optional[Board] = None, rendering: bool = True):
             time.sleep(0.2)
 
 
+def cli_run():
+    """
+    Command Line Interface game
+    """
+    try:
+        print("\033c")  # clear terminal
+        print("\033[1mWelcome to Connect Four Master!\033[0m")
+        time.sleep(1)
+
+        valid_inputs = list(map(str, PlayerType))
+        while True:
+            player_1_type = str(input(f"Who is player 1? ({'/'.join(valid_inputs)}) "))
+            if player_1_type in valid_inputs:
+                player_1 = from_player_type(PlayerType[player_1_type.upper()])(PlayerId.PLAYER1)
+                break
+            print("Invalid input, try again: ")
+
+        while True:
+            player_2_type = str(input(f"Who is player 2? ({'/'.join(valid_inputs)}) "))
+            if player_2_type in valid_inputs:
+                player_2 = from_player_type(PlayerType[player_2_type.upper()])(PlayerId.PLAYER1)
+                break
+            print("Invalid input, try again: ")
+
+        print("\033[1;91mLet's play!\033[0m")
+        time.sleep(1)
+        run(player_1, player_2, rendering=True)
+    except KeyboardInterrupt:
+        print("\nQuitting...")
+        time.sleep(1)
+        sys.exit(0)
+
+
 if __name__ == "__main__":
-    run()
+    cli_run()

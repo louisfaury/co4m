@@ -16,7 +16,7 @@ class Board:
     def __init__(self):
         self.width = 7
         self.height = 6
-        self.state = np.zeros(shape=(self.height, self.width))
+        self.state = np.zeros(shape=(self.height, self.width), dtype=int)
         self.int_to_char = {1: "\U0001F7E1", -1: "\U0001F534", 0: "\u2B24"}
 
     def get_height(self, column: int) -> int:
@@ -75,16 +75,19 @@ class Board:
         max_consec = 0
         for array in check_list:
             max_consec = max(max_consec, self.max_consecutive(array))
+            if max_consec >= 4:
+                return True
 
-        return max_consec >= 4
+        return False
 
     def is_draw(self):
         """
         Checks if the game is a draw
         """
+        if np.sum(np.abs(self.state)) != self.width * self.height:
+            return False
         return (
-            np.sum(np.abs(self.state)) == self.width * self.height
-            and not self.is_won(PlayerId.PLAYER1)
+            not self.is_won(PlayerId.PLAYER1)
             and not self.is_won(PlayerId.PLAYER2)
         )
 

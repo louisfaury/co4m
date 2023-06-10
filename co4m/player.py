@@ -137,16 +137,34 @@ class MinimaxPlayer(Player):
         board: "Board",
         depth: int,
         max_node: bool = False,
+        alpha: float = LOOSE_VALUE,
+        beta: float = WIN_VALUE
     ) -> float:
         """
-        Minimimax implentation
+        Minimimax implentation with alpha-beta pruning
         """
         if depth == 0 or board.is_terminal():
             return self.evaluate(board)
 
         else:
             children = board.expand(self.player_id if max_node else ~self.player_id)[1]
-            aggregate_operator = max if max_node else min
-            return aggregate_operator(
-                [self.minimax(child, depth - 1, ~max_node) for child in children]
-            )
+            if max_node:
+                value = alpha
+                for child in children:
+                    value = max(
+                        value,
+                        self.minimax(child, depth - 1, ~max_node, value, beta)
+                    )
+                    if value >= beta:
+                        return beta
+                return value
+            else:
+                value = beta
+                for child in children:
+                    value = min(
+                        value,
+                        self.minimax(child, depth - 1, ~max_node, alpha, value)
+                    )
+                    if value <= alpha:
+                        return alpha
+                return value

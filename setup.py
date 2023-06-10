@@ -9,4 +9,9 @@ setup(
     author="Louis Faury",
     author_email="l.faury@hotmail.fr",
     description="Connect Four Master",
+    entry_points={
+        'console_scripts': [
+            'play-connect-four = co4m.game:cli_run',
+        ],
+    },
 )

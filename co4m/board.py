@@ -1,7 +1,8 @@
 """
 Connect Four board implementation
 """
-from typing import Literal
+from copy import deepcopy
+from typing import List, Literal, Tuple
 import numpy as np
 
 from co4m.player import PlayerId
@@ -87,29 +88,41 @@ class Board:
             and not self.is_won(PlayerId.PLAYER2)
         )
 
-    def is_terminal(self) -> bool:
+    def get_legal_moves(self) -> List[int]:
         """
-        Checks if the board is in terminal state
+        Returns all legal moves
+        """
+        return [move for move in range(self.width) if self.is_legal(move)]
+
+    def is_terminal(self):
+        """ "
+        Checks if state is terminal (win, loose or draw)
         """
         return self.is_won(PlayerId.PLAYER1) or self.is_won(PlayerId.PLAYER2) or self.is_draw()
 
-    def render(self):
-        """
-        Rendering
-        """
-        print(self)
-
     def reset(self):
         self.state *= 0
+
+    def expand(self, player_id: PlayerId) -> Tuple[List[int], List["Board"]]:
+        """
+        Expand the board from its current state to reachable valid states
+        """
+        valid_moves = self.get_legal_moves()
+        valid_children = []
+        for move in valid_moves:
+            next_board = deepcopy(self)
+            next_board.drop_coin(move, player_id)
+            valid_children.append(next_board)
+        return valid_moves, valid_children
 
     def __repr__(self):
         return str(self.state[::-1])
 
     def __str__(self):
         descr = "\n\033[1;30;47m"
-        descr += "\n \t \t \t \t \t \t  \n".join(
+        descr += "\n   \t \t \t \t \t \t   \n".join(
             [
-                "\t".join([self.int_to_char[elem] + " " for i, elem in enumerate(row)])
+                " " + "\t".join([self.int_to_char[elem] for i, elem in enumerate(row)]) + "  "
                 for row in self.state[::-1]
             ]
         )

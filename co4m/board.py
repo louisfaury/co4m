@@ -1,11 +1,14 @@
 """
 Connect Four board implementation
+TODO expand can save computations when there is a winning move in the expansion
 """
 from copy import deepcopy
 from typing import List, Literal, Tuple
 import numpy as np
 
 from co4m.player import PlayerId
+
+INT_TO_CHAR = {1: "\U0001F7E1", -1: "\U0001F534", 0: "\u2B24"}
 
 
 class Board:
@@ -17,7 +20,6 @@ class Board:
         self.width = 7
         self.height = 6
         self.state = np.zeros(shape=(self.height, self.width), dtype=int)
-        self.int_to_char = {1: "\U0001F7E1", -1: "\U0001F534", 0: "\u2B24"}
 
     def get_height(self, column: int) -> int:
         """
@@ -80,6 +82,14 @@ class Board:
 
         return False
 
+    def is_winning_move(self, player_id: PlayerId) -> int:
+        for move in self.get_legal_moves():
+            won = self.drop_coin(move, player_id)
+            self.state[self.get_height(move)-1, move] = 0
+            if won:
+                return move
+        return -1
+
     def is_draw(self):
         """
         Checks if the game is a draw
@@ -112,11 +122,15 @@ class Board:
         """
         valid_moves = self.get_legal_moves()
         valid_children = []
+
         for move in valid_moves:
-            next_board = deepcopy(self)
+            next_board = self.copy()
             next_board.drop_coin(move, player_id)
             valid_children.append(next_board)
         return valid_moves, valid_children
+
+    def copy(self):
+        return deepcopy(self)
 
     def __repr__(self):
         return str(self.state[::-1])
@@ -125,7 +139,7 @@ class Board:
         descr = "\n\033[1;30;47m"
         descr += "\n   \t \t \t \t \t \t   \n".join(
             [
-                " " + "\t".join([self.int_to_char[elem] for i, elem in enumerate(row)]) + "  "
+                " " + "\t".join([INT_TO_CHAR[elem] for i, elem in enumerate(row)]) + "  "
                 for row in self.state[::-1]
             ]
         )

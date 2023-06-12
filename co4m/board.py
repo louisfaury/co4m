@@ -85,7 +85,7 @@ class Board:
     def is_winning_move(self, player_id: PlayerId) -> int:
         for move in self.get_legal_moves():
             won = self.drop_coin(move, player_id)
-            self.state[self.get_height(move)-1, move] = 0
+            self.state[self.get_height(move) - 1, move] = 0
             if won:
                 return move
         return -1
@@ -96,10 +96,7 @@ class Board:
         """
         if np.sum(np.abs(self.state)) != self.width * self.height:
             return False
-        return (
-            not self.is_won(PlayerId.PLAYER1)
-            and not self.is_won(PlayerId.PLAYER2)
-        )
+        return not self.is_won(PlayerId.PLAYER1) and not self.is_won(PlayerId.PLAYER2)
 
     def get_legal_moves(self) -> List[int]:
         """

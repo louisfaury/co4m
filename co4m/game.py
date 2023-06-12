@@ -1,7 +1,11 @@
 """
 Connect Four game implementation
-TODO: MCTS
+TODO: Winning move in heuristic
+TODO: improve min-max heuristic
+TODO: Min-Max adjusted depth
 TODO: play-offs
+TODO: many sanity checks
+TODO: MCTS check
 """
 
 from typing import Optional
@@ -14,7 +18,7 @@ from co4m.player import Player, PlayerId, PlayerType, from_player_type
 
 def run(player_1: Player, player_2: Player, board: Optional[Board] = None, rendering: bool = True):
     """
-    Runs the game in the terminal
+    Runs a connect-four game
     """
     board = board if board else Board()
 
@@ -34,12 +38,14 @@ def run(player_1: Player, player_2: Player, board: Optional[Board] = None, rende
 
         if won:
             render()
-            print(f"\033[1;91m{player} won!\033[0m")
-            return player
+            if rendering:
+                print(f"\033[1;91m{player} won!\033[0m")
+            return player.player_id.value
 
         if board.is_draw():
             render()
-            print("This a draw!")
+            if rendering:
+                print("This a draw!")
             return 0
 
         turn = ~turn

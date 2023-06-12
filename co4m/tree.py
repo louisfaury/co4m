@@ -44,11 +44,7 @@ class Node:
     #         node.backup(-value)
 
     def uct(self) -> float:
-        return (
-            self.value + sqrt(2 * log(self.parent.n_visits) / self.n_visits)
-            if not self.n_visits
-            else float("inf")
-        )
+        return self.value + sqrt(2 * log(self.parent.n_visits) / self.n_visits)
 
     def depth(self) -> int:
         if self.children:

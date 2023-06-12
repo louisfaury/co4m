@@ -11,10 +11,11 @@ import time
 from typing import TYPE_CHECKING
 
 import numpy as np
+from co4m.tree import Node
 
 if TYPE_CHECKING:
     from co4m.board import Board
-from co4m.tree import Node
+
 
 
 class PlayerId(Enum):
@@ -178,6 +179,9 @@ class MinimaxPlayer(Player):
 
 
 class MctsPlayer(Player):
+    """
+    Monte Carlo Tree Search class
+    """
     def __init__(self, player_id: PlayerId, time_out: int = 6):
         super().__init__(player_id, PlayerType.AI_MCTS)
         self.time_out = time_out
@@ -220,14 +224,13 @@ class MctsPlayer(Player):
             children = [
                 Node(child, parent=node, action=move) for move, child in zip(moves, children)
             ]
-            children = [child for child in children]  # TODO clean this
             node.children = children
 
         unvisited_children = [child for child in node.children if child.n_visits == 0]
 
         if unvisited_children:
             child = random.choice(unvisited_children)
-            result = self.evaluate(child, player_id)  # TODO check player_id doest get muted
+            result = self.roll_out(child, player_id)  # TODO check player_id doest get muted
             child.update(result)
             # back-up
             parent = child.parent
@@ -240,7 +243,7 @@ class MctsPlayer(Player):
             best_child = sorted(node.children, key=lambda child: child.uct())[-1]
             self.mcts(best_child, ~player_id)
 
-    def evaluate(self, node: Node, player_id: PlayerId):
+    def roll_out(self, node: Node, player_id: PlayerId):
         """
         Perform random roll-out
         """
@@ -270,6 +273,9 @@ class MctsPlayer(Player):
 
 
 def from_player_type(player_type: PlayerType):
+    """
+    Player factory
+    """
     if player_type == PlayerType.HUMAN:
         return HumanPlayer
     if player_type == PlayerType.AI_MINMAX:

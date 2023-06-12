@@ -49,5 +49,5 @@ class Node:
 
     def depth(self) -> int:
         if self.children:
-            return 1 + max([child.depth() for child in self.children])
+            return 1 + max(child.depth() for child in self.children)
         return 0

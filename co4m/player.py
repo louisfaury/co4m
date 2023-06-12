@@ -263,7 +263,7 @@ class MctsPlayer(Player):
             turn = ~turn
 
     def __repr__(self):
-        return super().__repr__()[:-1] + f" - timeout={self.time_out})"
+        return super().__repr__()[:-1] + f" - timeout={self.time_out}s)"
 
 
 def from_player_type(player_type: PlayerType):

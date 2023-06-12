@@ -15,5 +15,5 @@ black:
 lint:
 		python3 -m pylint -j 0 co4m/
 
-test:
-		python3 -m pytest tests/
+mypy:
+		python -m mypy --ignore-missing-imports co4m/

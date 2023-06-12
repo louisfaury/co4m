@@ -1,11 +1,10 @@
 """
 Simple Tree implementation for MCTS
 TODO: back-up
-TODO:
 """
 
 from math import sqrt, log
-from typing import List, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from co4m.board import Board
@@ -19,9 +18,9 @@ class Node:
     def __init__(
         self,
         board: "Board",
-        parent: "Node" = None,
-        action: int = None,
-        children: List["Node"] = None,
+        parent: Optional["Node"] = None,
+        action: Optional[int] = None,
+        children: Optional[List["Node"]] = None,
     ):
         self.board = board
         self.sum_value = 0
@@ -45,7 +44,11 @@ class Node:
     #         node.backup(-value)
 
     def uct(self) -> float:
-        return self.value + sqrt(2 * log(self.parent.n_visits) / self.n_visits)
+        return (
+            self.value + sqrt(2 * log(self.parent.n_visits) / self.n_visits)
+            if not self.n_visits
+            else float("inf")
+        )
 
     def depth(self) -> int:
         if self.children:

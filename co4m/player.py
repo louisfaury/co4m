@@ -1,21 +1,21 @@
 """
 Connect Four Player implementation
-TODO: improve random player to win if possible
-TODO: clean expand
+TODO: fix few bugs (cannot choose from empty sequence)
+TODO: clean MCTS
+TODO: MCTS and minimax more efficient by avoiding deep copies
 """
 
 from abc import abstractmethod
 from enum import Enum
 import random
 import time
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 import numpy as np
 from co4m.tree import Node
 
 if TYPE_CHECKING:
     from co4m.board import Board
-
 
 
 class PlayerId(Enum):
@@ -97,9 +97,6 @@ class RandomPlayer(Player):
         super().__init__(player_id, PlayerType.RANDOM)
 
     def act(self, board: "Board"):
-        winning_move = board.is_winning_move(self.player_id)
-        if winning_move >= 0:
-            return winning_move
         while True:
             move = random.choice(range(board.width))
             if board.is_legal(move):
@@ -136,7 +133,7 @@ class MinimaxPlayer(Player):
             - np.sum(EVAL * (board.state == (~self.player_id).value).astype(int))
         )
 
-    def act(self, board: "Board", depth: int = None) -> int:
+    def act(self, board: "Board", depth: Optional[int] = None) -> int:
         print(f"{self} thinking..", end="\r")
         depth = depth if depth else self.depth
         moves, children = board.expand(self.player_id)
@@ -182,6 +179,7 @@ class MctsPlayer(Player):
     """
     Monte Carlo Tree Search class
     """
+
     def __init__(self, player_id: PlayerId, time_out: int = 6):
         super().__init__(player_id, PlayerType.AI_MCTS)
         self.time_out = time_out
@@ -194,7 +192,6 @@ class MctsPlayer(Player):
         while not timeout:
             self.mcts(node, self.player_id)
             timeout = time.time() - start > self.time_out
-        input("move")
         best_child = sorted(node.children, key=lambda child: child.value)[-1]
         return best_child.action
 
@@ -210,6 +207,7 @@ class MctsPlayer(Player):
             if node.board.is_draw():
                 result = 0
             node.update(result)
+
             # back-up
             parent = node.parent
             while parent:
@@ -220,10 +218,8 @@ class MctsPlayer(Player):
 
         if not node.children:
             # expand the current node
-            moves, children = node.board.expand(player_id)
-            children = [
-                Node(child, parent=node, action=move) for move, child in zip(moves, children)
-            ]
+            moves, boards = node.board.expand(player_id)
+            children = [Node(child, parent=node, action=move) for move, child in zip(moves, boards)]
             node.children = children
 
         unvisited_children = [child for child in node.children if child.n_visits == 0]
@@ -262,10 +258,8 @@ class MctsPlayer(Player):
 
             if won:
                 return 1 if turn == player_id else -1
-
             if board.is_draw():
                 return 0
-
             turn = ~turn
 
     def __repr__(self):

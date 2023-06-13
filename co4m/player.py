@@ -1,7 +1,6 @@
 """
 Connect Four Player implementation
 TODO: fix few bugs (cannot choose from empty sequence)
-TODO: clean MCTS
 TODO: MCTS and minimax more efficient by avoiding deep copies
 """
 
@@ -138,6 +137,8 @@ class MinimaxPlayer(Player):
         depth = depth if depth else self.depth
         moves, children = board.expand(self.player_id)
         values = [self.minimax(child, depth - 1) for child in children]
+        # print(moves, values)
+        # input("move")
         return moves[int(np.argmax(values))]
 
     def minimax(
@@ -192,6 +193,9 @@ class MctsPlayer(Player):
         while not timeout:
             self.mcts(node, self.player_id)
             timeout = time.time() - start > self.time_out
+        # for child in node.children:
+        #     print(child.action, np.around(child.value, 2), child.depth(), child.n_visits)
+        # input("move")
         best_child = sorted(node.children, key=lambda child: child.value)[-1]
         return best_child.action
 
@@ -199,67 +203,56 @@ class MctsPlayer(Player):
         """
         Monte-Carl Tree search
         """
-        if node.board.is_terminal():
-            if node.board.is_won(player_id):
-                result = -1
-            if node.board.is_won(~player_id):
-                result = 1
-            if node.board.is_draw():
-                result = 0
-            node.update(result)
+        # Tree policy
+        exploit = True
+        is_terminal = False
+        while exploit and not is_terminal:
+            if node.fully_explored():
+                node = sorted(node.children, key=lambda child: child.uct(), reverse=True)[0]
+            else:
+                exploit = False
+                if not node.children:
+                    moves, boards = node.board.expand(player_id)
+                    node.children = [Node(child, parent=node, action=move) for move, child in zip(moves, boards)]
+                node = random.choice([child for child in node.children if child.n_visits == 0])
+            is_terminal = node.board.is_terminal()
+            player_id = ~player_id
 
-            # back-up
-            parent = node.parent
-            while parent:
-                result *= -1
-                parent.update(result)
-                parent = parent.parent
-            return
-
-        if not node.children:
-            # expand the current node
-            moves, boards = node.board.expand(player_id)
-            children = [Node(child, parent=node, action=move) for move, child in zip(moves, boards)]
-            node.children = children
-
-        unvisited_children = [child for child in node.children if child.n_visits == 0]
-
-        if unvisited_children:
-            child = random.choice(unvisited_children)
-            result = self.roll_out(child, player_id)  # TODO check player_id doest get muted
-            child.update(result)
-            # back-up
-            parent = child.parent
-            while parent:
-                result *= -1
-                parent.update(result)
-                parent = parent.parent
-
-        else:
-            best_child = sorted(node.children, key=lambda child: child.uct())[-1]
-            self.mcts(best_child, ~player_id)
+        # Default policy
+        node.is_terminal = is_terminal
+        reward = -self.roll_out(node, player_id)
+        node.backup(reward)
 
     def roll_out(self, node: Node, player_id: PlayerId):
         """
-        Perform random roll-out
+        Perform random roll-out (if node is not terminal)
+        Returns
+        -------
+        1 if player_id wins, 0 if draw, -1 otherwise
         """
-        # prepare roll-out
-        board = node.board.copy()  # save time by copying
-        turn = ~player_id
 
+        if node.is_terminal:
+            if node.board.is_draw():
+                return 0
+            else:
+                return 1 if node.board.is_won(player_id) else -1
+
+        turn = player_id
+        board = node.board.copy()  # save time by copying
         # roll-out
         while True:
-            winning_move = board.is_winning_move(turn)
-            if winning_move >= 0:
-                move = winning_move
-            else:
-                move = random.choice(board.get_legal_moves())
+            winning_move = board.is_winning_move(turn)  # checks if there exist a winning move
+            move = (
+                winning_move if winning_move >= 0
+                else random.choice(board.get_legal_moves())  # else play random move
+            )
             won = board.drop_coin(move, turn)
 
             if won:
                 return 1 if turn == player_id else -1
             if board.is_draw():
                 return 0
+
             turn = ~turn
 
     def __repr__(self):

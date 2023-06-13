@@ -28,25 +28,31 @@ class Node:
         self.parent = parent
         self.action = action
         self.children = children
+        self.is_terminal = False
 
     @property
     def value(self) -> float:
         return self.sum_value / self.n_visits
 
-    def update(self, value):
-        self.sum_value += value
+    def backup(self, reward: int):
+        self.sum_value += reward
         self.n_visits += 1
-
-    # def backup(self, value):
-    #     if self.parent:
-    #         node = self.parent
-    #         node.update(-value)
-    #         node.backup(-value)
+        parent = self.parent
+        if parent:
+            reward *= -1
+            parent.backup(reward)
 
     def uct(self) -> float:
+        if self.is_terminal:
+            return self.value
         return self.value + sqrt(2 * log(self.parent.n_visits) / self.n_visits)
 
     def depth(self) -> int:
         if self.children:
             return 1 + max(child.depth() for child in self.children)
         return 0
+
+    def fully_explored(self) -> bool:
+        if self.children:
+            return min(child.n_visits for child in self.children) > 0
+        return False

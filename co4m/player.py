@@ -207,7 +207,9 @@ class MctsPlayer(Player):
                 exploit = False
                 if not node.children:
                     moves, boards = node.board.expand(player_id)
-                    node.children = [Node(child, parent=node, action=move) for move, child in zip(moves, boards)]
+                    node.children = [
+                        Node(child, parent=node, action=move) for move, child in zip(moves, boards)
+                    ]
                 node = random.choice([child for child in node.children if child.n_visits == 0])
             is_terminal = node.board.is_terminal()
             player_id = ~player_id
@@ -237,7 +239,8 @@ class MctsPlayer(Player):
         while True:
             winning_move = board.is_winning_move(turn)  # checks if there exist a winning move
             move = (
-                winning_move if winning_move >= 0
+                winning_move
+                if winning_move >= 0
                 else random.choice(board.get_legal_moves())  # else play random move
             )
             won = board.drop_coin(move, turn)

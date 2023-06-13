@@ -14,6 +14,7 @@ class Board:
     """
     Connect Four Board class
     """
+
     def __init__(self):
         self.width = 7
         self.height = 6

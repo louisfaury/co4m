@@ -3,7 +3,7 @@ Connect Four board implementation
 TODO expand can save computations when there is a winning move in the expansion
 """
 from copy import deepcopy
-from typing import List, Literal, Tuple
+from typing import List, Literal, Optional, Tuple
 import numpy as np
 
 from co4m.player import PlayerId
@@ -15,7 +15,6 @@ class Board:
     """
     Connect Four Board class
     """
-
     def __init__(self):
         self.width = 7
         self.height = 6
@@ -65,7 +64,7 @@ class Board:
         """
         conditional_state = self.state == player_id.value
         if np.sum(np.abs(conditional_state)) < 4:
-            return False
+            return False  # early termination if the player played less than four moves
 
         check_list = (
             [conditional_state[:, column] for column in range(self.width)]
@@ -76,16 +75,23 @@ class Board:
 
         max_consec = 0
         for array in check_list:
-            max_consec = max(max_consec, self.max_consecutive(array))
+            max_consec = max(max_consec, Board.max_consecutive(array))
             if max_consec >= 4:
                 return True
 
         return False
 
     def is_winning_move(self, player_id: PlayerId) -> int:
+        """
+        Finds if a given player has a winning move
+
+        Returns
+        -------
+        The winning move idx given one exists, else -1
+        """
         for move in self.get_legal_moves():
             won = self.drop_coin(move, player_id)
-            self.state[self.get_height(move) - 1, move] = 0
+            self.state[self.get_height(move) - 1, move] = 0  # resets the board
             if won:
                 return move
         return -1
@@ -110,21 +116,26 @@ class Board:
         """
         return self.is_won(PlayerId.PLAYER1) or self.is_won(PlayerId.PLAYER2) or self.is_draw()
 
-    def reset(self):
-        self.state *= 0
+    def reset(self, state: Optional[np.array] = None):
+        """
+        Resets the board to a given state if provided, else resets to the beginning of the game
+        """
+        self.state = state if state else np.zeros_like(self.state)
 
     def expand(self, player_id: PlayerId) -> Tuple[List[int], List["Board"]]:
         """
         Expand the board from its current state to reachable valid states
+        If the player has winning moves, then it expands according to one winning move.
         """
-        valid_moves = self.get_legal_moves()
-        valid_children = []
+        winning_move = self.is_winning_move(player_id)
+        moves = [winning_move] if winning_move >= 0 else self.get_legal_moves()
+        children = []
 
-        for move in valid_moves:
+        for move in moves:
             next_board = self.copy()
             next_board.drop_coin(move, player_id)
-            valid_children.append(next_board)
-        return valid_moves, valid_children
+            children.append(next_board)
+        return moves, children
 
     def copy(self):
         return deepcopy(self)

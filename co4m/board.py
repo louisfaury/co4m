@@ -1,8 +1,7 @@
 """
 Connect Four board implementation
-TODO expand can save computations when there is a winning move in the expansion
 """
-from copy import deepcopy
+
 from typing import List, Literal, Optional, Tuple
 import numpy as np
 
@@ -120,7 +119,7 @@ class Board:
         """
         Resets the board to a given state if provided, else resets to the beginning of the game
         """
-        self.state = state if state else np.zeros_like(self.state)
+        self.state = state if state is not None else np.zeros_like(self.state)
 
     def expand(self, player_id: PlayerId) -> Tuple[List[int], List["Board"]]:
         """
@@ -138,7 +137,9 @@ class Board:
         return moves, children
 
     def copy(self):
-        return deepcopy(self)
+        board = Board()
+        board.state = self.state.copy()
+        return board
 
     def __repr__(self):
         return str(self.state[::-1])

@@ -1,13 +1,10 @@
 """
 Connect Four Player implementation
-TODO: fix few bugs (cannot choose from empty sequence)
-TODO: MCTS and minimax more efficient by avoiding deep copies
 """
 
 from abc import abstractmethod
 from enum import Enum
 import random
-import time
 from typing import Optional, TYPE_CHECKING
 
 import numpy as np
@@ -107,7 +104,7 @@ class MinimaxPlayer(Player):
     Minimax player, with heuristic evaluation and alpha-beta pruning
     """
 
-    def __init__(self, player_id: PlayerId, depth: int = 5):
+    def __init__(self, player_id: PlayerId, depth: int = 6):
         super().__init__(player_id, PlayerType.AI_MINMAX)
         self.depth = depth
 
@@ -181,18 +178,15 @@ class MctsPlayer(Player):
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, player_id: PlayerId, time_out: int = 6):
+    def __init__(self, player_id: PlayerId, max_iter: int = 1_000):
         super().__init__(player_id, PlayerType.AI_MCTS)
-        self.time_out = time_out
+        self.max_iter = max_iter
 
     def act(self, board):
         print(f"{self} thinking..")
         node = Node(board)
-        start = time.time()
-        timeout = False
-        while not timeout:
+        for _ in range(self.max_iter):
             self.mcts(node, self.player_id)
-            timeout = time.time() - start > self.time_out
         # for child in node.children:
         #     print(child.action, np.around(child.value, 2), child.depth(), child.n_visits)
         # input("move")
@@ -256,7 +250,7 @@ class MctsPlayer(Player):
             turn = ~turn
 
     def __repr__(self):
-        return super().__repr__()[:-1] + f" - timeout={self.time_out}s)"
+        return super().__repr__()[:-1] + f" - max_iter={self.max_iter})"
 
 
 def from_player_type(player_type: PlayerType):

@@ -1,11 +1,8 @@
 """
 Connect Four game implementation
-TODO: Winning move in heuristic
 TODO: improve min-max heuristic
-TODO: Min-Max adjusted depth
 TODO: play-offs
 TODO: many sanity checks
-TODO: MCTS check
 """
 
 from typing import Optional
